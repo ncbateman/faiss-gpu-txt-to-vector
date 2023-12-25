@@ -1,0 +1,3 @@
+tokenizer_model: "./models/"
+index_output: "./indexes/"
+txt_input_dir: "./input/"

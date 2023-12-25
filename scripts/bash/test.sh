@@ -1,0 +1,1 @@
+docker build -f ./docker/gpt/Dockerfile -t home-gpt:latest .
