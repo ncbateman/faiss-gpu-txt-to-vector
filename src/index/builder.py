@@ -7,8 +7,6 @@ import faiss
 import torch
 from transformers import AutoModel, AutoTokenizer
 
-from config.config import Config  # Import Config class from config module
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -19,15 +17,13 @@ logging.basicConfig(
 class IndexBuilder:
     """Class to build an index using transformer models and FAISS."""
 
-    def __init__(self, config):
+    def __init__(self):
         """Initializes the IndexBuilder with a given configuration."""
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Initializing IndexBuilder")
-
-        self.config = config
         self._setup_device()
         self._load_model()
-        self.documents_dir = config.get('documents_dir')
+        self.documents_dir = '/app/input/txt'
 
     def _setup_device(self):
         """Sets up the device for computation (GPU/CPU)."""
@@ -45,7 +41,7 @@ class IndexBuilder:
 
     def _load_model(self):
         """Loads the tokenizer and model for embeddings."""
-        model_path = self.config.get('transformer_model')
+        model_path = '/app/models/tokenizer'
         self.logger.info(f"Loading tokenizer and model from {model_path}")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.model = AutoModel.from_pretrained(model_path).to(self.device)

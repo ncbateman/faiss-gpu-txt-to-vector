@@ -13,15 +13,10 @@ logging.basicConfig(
 def main():
     """Main function to initialize and run the index building process."""
     try:
-        # Load configuration
-        config = Config('./config/config.yaml')
-
         # Initialize IndexBuilder with the loaded configuration
-        index_builder = IndexBuilder(config)
-
+        index_builder = IndexBuilder()
         # Create the index using the specified index path from the configuration
-        index_path = config.get('index_path')
-        index_builder.create_index(index_path)
+        index_builder.create_index('/app/output/index')
         
         logging.info("Index building process completed successfully.")
     except Exception as e:
