@@ -1,7 +1,6 @@
 # __init__.py
 
 import logging
-from config.config import Config
 from index.builder import IndexBuilder
 
 # Configure logging
