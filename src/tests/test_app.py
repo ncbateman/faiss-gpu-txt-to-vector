@@ -1,42 +1,46 @@
 import pytest
-from unittest.mock import Mock, patch
-from app import main  # Importing main from your app module
-
-# Import the IndexBuilder class for testing
+from unittest.mock import patch, MagicMock
+import app
 from index.builder import IndexBuilder
 
 @pytest.fixture
 def mock_index_builder():
-    with patch('index.builder.IndexBuilder') as mock_builder:
+    with patch('index.builder.IndexBuilder', autospec=True) as mock_builder:
         yield mock_builder
 
 @pytest.fixture
 def mock_tokenizer():
-    with patch('index.builder.AutoTokenizer.from_pretrained') as mock:
+    with patch('transformers.AutoTokenizer.from_pretrained') as mock:
         yield mock
 
 @pytest.fixture
 def mock_model():
-    with patch('index.builder.AutoModel.from_pretrained') as mock:
+    with patch('transformers.AutoModel.from_pretrained') as mock:
         yield mock
 
-def test_main_success(mock_index_builder, mock_tokenizer, mock_model):
-    mock_index_builder.return_value.create_index.return_value = None
+@pytest.fixture
+def mock_torch():
+    with patch('torch.cuda.is_available', return_value=True):
+        yield
 
-    with patch('app.logging') as mock_logging:
-        main()
+def test_main_success(mock_index_builder, mock_tokenizer, mock_model, mock_torch):
+    mock_builder_instance = mock_index_builder.return_value
+    mock_builder_instance.create_index.return_value = None
+
+    with patch('logging.Logger.info') as mock_logging_info:
+        app.main()
         # Check if IndexBuilder was initialized
         mock_index_builder.assert_called_once()
         # Check if create_index was called
-        mock_index_builder.return_value.create_index.assert_called_once()
+        mock_builder_instance.create_index.assert_called_once()
         # Check if success log was written
-        mock_logging.info.assert_called_with("Index building process completed successfully.")
+        mock_logging_info.assert_called_with("Index building process completed successfully.")
 
-def test_main_exception(mock_index_builder, mock_tokenizer, mock_model):
-    # Mocking create_index to raise an exception
-    mock_index_builder.return_value.create_index.side_effect = Exception("Test Error")
+def test_main_exception(mock_index_builder, mock_tokenizer, mock_model, mock_torch):
+    mock_builder_instance = mock_index_builder.return_value
+    mock_builder_instance.create_index.side_effect = Exception("Test Error")
 
-    with patch('app.logging') as mock_logging, pytest.raises(Exception):
-        main()
+    with patch('logging.Logger.error') as mock_logging_error, pytest.raises(Exception):
+        app.main()
         # Check if error log was written
-        mock_logging.error.assert_any_call("An error occurred: Test Error")
+        mock_logging_error.assert_called_with("An error occurred: Test Error")
