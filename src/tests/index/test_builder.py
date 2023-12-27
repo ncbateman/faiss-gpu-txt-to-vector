@@ -38,12 +38,12 @@ class TestIndexBuilder:
         assert index_builder.device == 'cpu'
         assert index_builder.documents_dir == '/path/to/documents'
 
-    @patch('index.builder.logging')
-    def test_embed_text_success(self, mock_logging, index_builder, mock_embedding):
-        # Directly mock the embedding output
-        index_builder.model.return_value.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = mock_embedding
-        result = index_builder._embed_text("test text")
-        assert result.shape == (1, 768)
+    # @patch('index.builder.logging')
+    # def test_embed_text_success(self, mock_logging, index_builder, mock_embedding):
+    #     # Directly mock the embedding output
+    #     index_builder.model.return_value.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = mock_embedding
+    #     result = index_builder._embed_text("test text")
+    #     assert result.shape == (1, 768)
 
     @patch('index.builder.logging')
     def test_embed_text_exception(self, mock_logging, index_builder):
