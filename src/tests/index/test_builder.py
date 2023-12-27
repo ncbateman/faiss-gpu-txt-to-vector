@@ -5,6 +5,10 @@ import numpy as np
 # Assuming your IndexBuilder class is in a file named 'builder.py' inside the 'index' package
 from index.builder import IndexBuilder
 
+class MockModelOutput:
+    def __init__(self, last_hidden_state):
+        self.last_hidden_state = last_hidden_state
+
 class TestIndexBuilder:
     @pytest.fixture
     def mock_tokenizer(self):
@@ -12,9 +16,11 @@ class TestIndexBuilder:
 
     @pytest.fixture
     def mock_model(self):
-        mock_model = Mock()
-        mock_model.return_value = Mock()
-        return mock_model
+        model = Mock()
+        model_output = MockModelOutput(Mock())
+        model_output.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = np.random.rand(1, 768)
+        model.return_value = model_output
+        return model
 
     @pytest.fixture
     def index_builder(self, mock_tokenizer, mock_model):
