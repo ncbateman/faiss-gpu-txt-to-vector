@@ -15,31 +15,39 @@ RUN apt-get install -y libomp-dev
 # Upgrade pip
 RUN pip3 install --upgrade pip
 
-# Install the required Python packages
-RUN pip3 install jinja2
-RUN pip3 install networkx
-RUN pip3 install numpy
+# Create a new user named 'faiss-gpu-txt-to-vector'
+RUN useradd -ms /bin/bash faiss-gpu-txt-to-vector
 
-# Install nvidia libraries seperately for unstable connections
-RUN pip3 install nvidia-cublas-cu12
-RUN pip3 install nvidia-cuda-cupti-cu12
-RUN pip3 install nvidia-cuda-nvrtc-cu12
-RUN pip3 install nvidia-cuda-runtime-cu12
-RUN pip3 install nvidia-cudnn-cu12
-RUN pip3 install nvidia-cufft-cu12
-RUN pip3 install nvidia-curand-cu12
-RUN pip3 install nvidia-cusolver-cu12
-RUN pip3 install nvidia-cusparse-cu12
-RUN pip3 install nvidia-nccl-cu12
-RUN pip3 install nvidia-nvtx-cu12
+# Switch to the new user
+USER faiss-gpu-txt-to-vector
 
+# Set the home directory for the user
+ENV HOME /home/faiss-gpu-txt-to-vector
+WORKDIR $HOME
 
-# Install ml libraries
-RUN pip3 install torch
-RUN pip3 install transformers
-RUN pip3 install tokenizers
+# Install the required Python packages as the new user
+RUN pip3 install --user jinja2
+RUN pip3 install --user networkx
+RUN pip3 install --user numpy
 
+# Install nvidia libraries separately for unstable connections
+RUN pip3 install --user nvidia-cublas-cu12
+RUN pip3 install --user nvidia-cuda-cupti-cu12
+RUN pip3 install --user nvidia-cuda-nvrtc-cu12
+RUN pip3 install --user nvidia-cuda-runtime-cu12
+RUN pip3 install --user nvidia-cudnn-cu12
+RUN pip3 install --user nvidia-cufft-cu12
+RUN pip3 install --user nvidia-curand-cu12
+RUN pip3 install --user nvidia-cusolver-cu12
+RUN pip3 install --user nvidia-cusparse-cu12
+RUN pip3 install --user nvidia-nccl-cu12
+RUN pip3 install --user nvidia-nvtx-cu12
+
+# Install machine learning libraries
+RUN pip3 install --user torch
+RUN pip3 install --user transformers
+RUN pip3 install --user tokenizers
 
 # Install faiss
-COPY ./deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-RUN pip3 install /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+COPY ./deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /deps/
+RUN pip3 install --user /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
