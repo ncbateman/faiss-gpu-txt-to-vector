@@ -10,4 +10,4 @@ RUN mkdir -p models
 COPY src/ ./src/
 
 # Command to run when the container starts
-CMD ["python3", "/app/src/init.py"]
+CMD ["python3", "/app/src/app.py"]

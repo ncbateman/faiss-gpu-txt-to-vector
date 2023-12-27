@@ -1,9 +1,9 @@
 import pytest
-from init.index.builder import IndexBuilder
 import numpy as np
 import faiss
 import torch
 from transformers import AutoModel, AutoTokenizer
+from index.builder import IndexBuilder
 
 # Test to check if device is correctly set to GPU when available
 def test_setup_device_with_gpu(mocker):

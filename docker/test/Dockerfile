@@ -10,7 +10,7 @@ WORKDIR /app
 RUN mkdir -p models
 
 # Copy the necessary files from your host to the container
-COPY . .
+COPY src/ ./src/
 
 # Command to run when the container starts
 CMD ["pytest"]
