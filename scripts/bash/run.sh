@@ -23,7 +23,7 @@ txt_input_dir=${txt_input_dir:-$default_txt_input_dir}
 
 # Build Docker images
 docker build -f ./docker/base/Dockerfile -t faiss-gpu-txt-to-vector:latest .
-docker build -f ./docker/rag-index-builder/Dockerfile -t faiss-gpu-txt-to-vector:latest .
+docker build -f ./docker/faiss-gpu-txt-to-vector/Dockerfile -t faiss-gpu-txt-to-vector:latest .
 
 # Stop and remove existing container
 docker stop faiss-gpu-txt-to-vector 2>/dev/null
