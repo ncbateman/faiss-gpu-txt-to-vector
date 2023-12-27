@@ -1,5 +1,5 @@
 import pytest
-from index.builder import IndexBuilder
+from ...index.builder import IndexBuilder
 import numpy as np
 import faiss
 import torch
