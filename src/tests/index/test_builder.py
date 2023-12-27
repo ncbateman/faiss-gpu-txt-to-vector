@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, patch, mock_open
 import numpy as np
 
-# Assuming your IndexBuilder class is in a file named 'index_builder.py'
+# Assuming your IndexBuilder class is in a file named 'builder.py' inside the 'index' package
 from index.builder import IndexBuilder
 
 class TestIndexBuilder:
@@ -30,46 +30,46 @@ class TestIndexBuilder:
         assert index_builder.device == 'cpu'
         assert index_builder.documents_dir == '/path/to/documents'
 
-    @patch('index_builder.logging')
+    @patch('index.builder.logging')
     def test_embed_text_success(self, mock_logging, index_builder, mock_embedding):
         index_builder.model.return_value.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = mock_embedding
         result = index_builder._embed_text("test text")
         assert result.shape == (1, 768)
 
-    @patch('index_builder.logging')
+    @patch('index.builder.logging')
     def test_embed_text_exception(self, mock_logging, index_builder):
         index_builder.model.side_effect = Exception("Test Exception")
         with pytest.raises(Exception):
             index_builder._embed_text("test text")
 
-    @patch('index_builder.faiss')
-    @patch('index_builder.logging')
+    @patch('index.builder.faiss')
+    @patch('index.builder.logging')
     def test_create_gpu_index_success(self, mock_logging, mock_faiss, index_builder):
         index_builder.device = 'cuda'
         result = index_builder._create_gpu_index(768)
         assert result is not None
 
-    @patch('index_builder.faiss')
-    @patch('index_builder.logging')
+    @patch('index.builder.faiss')
+    @patch('index.builder.logging')
     def test_create_gpu_index_exception(self, mock_logging, mock_faiss, index_builder):
         index_builder.device = 'cuda'
         mock_faiss.IndexFlatL2.side_effect = Exception("Test Exception")
         with pytest.raises(Exception):
             index_builder._create_gpu_index(768)
 
-    @patch('index_builder.faiss')
-    @patch('index_builder.os.listdir', return_value=['doc1.txt', 'doc2.txt'])
-    @patch('index_builder.open', new_callable=mock_open, read_data="mock file content")
-    @patch('index_builder.logging')
+    @patch('index.builder.faiss')
+    @patch('index.builder.os.listdir', return_value=['doc1.txt', 'doc2.txt'])
+    @patch('index.builder.open', new_callable=mock_open, read_data="mock file content")
+    @patch('index.builder.logging')
     def test_create_index_success(self, mock_logging, mock_file_open, mock_listdir, mock_faiss, index_builder, mock_embedding):
         index_builder.device = 'cpu'
         index_builder._embed_text = Mock(return_value=mock_embedding)
         index_builder.create_index()
         assert mock_faiss.write_index.called
 
-    @patch('index_builder.faiss')
-    @patch('index_builder.os.listdir', side_effect=Exception("Test Exception"))
-    @patch('index_builder.logging')
+    @patch('index.builder.faiss')
+    @patch('index.builder.os.listdir', side_effect=Exception("Test Exception"))
+    @patch('index.builder.logging')
     def test_create_index_exception(self, mock_logging, mock_listdir, mock_faiss, index_builder):
         index_builder.device = 'cpu'
         with pytest.raises(Exception):
