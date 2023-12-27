@@ -1,6 +1,8 @@
 # __init__.py
 
 import logging
+import torch
+from transformers import AutoModel, AutoTokenizer
 from index.builder import IndexBuilder
 
 # Configure logging
