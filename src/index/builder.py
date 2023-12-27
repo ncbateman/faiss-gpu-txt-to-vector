@@ -5,7 +5,6 @@ import time
 import faiss
 import torch
 from transformers import AutoModel, AutoTokenizer
-from faiss import StandardGpuResources, index_cpu_to_all_gpus
 
 # Configure logging
 logging.basicConfig(
@@ -58,9 +57,10 @@ class IndexBuilder:
 
     def _create_gpu_index(self, d):
         """Creates a FAISS index and replicates it over all GPUs."""
-        res = [StandardGpuResources() for _ in range(torch.cuda.device_count())]
-        index_flat = faiss.IndexFlatL2(d)
-        gpu_index = index_cpu_to_all_gpus(index_flat, res=res)
+        cpu_index = faiss.IndexFlatL2(d)
+        cloner_options = faiss.GpuMultipleClonerOptions()
+        cloner_options.shard = True
+        gpu_index = faiss.index_cpu_to_all_gpus(cpu_index, cloner_options)
         return gpu_index
 
     def create_index(self):
