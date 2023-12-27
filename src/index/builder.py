@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import numpy as np
 
 import faiss
 import torch
@@ -76,16 +77,19 @@ class IndexBuilder:
         else:
             index = faiss.IndexFlatL2(d)
 
-        document_count = 0
+        embeddings = []
         for filename in sorted(os.listdir(self.documents_dir)):
             file_path = os.path.join(self.documents_dir, filename)
             with open(file_path, 'r') as file:
                 text = file.read()
                 embedding = self._embed_text(text)
-                index.add(embedding)
-                document_count += 1
-                self.logger.debug(f"Added {filename} to index")
+                embeddings.append(embedding)
 
+        if embeddings:
+            embeddings_matrix = np.vstack(embeddings)
+            index.add(embeddings_matrix)
+
+        document_count = len(embeddings)
         self.logger.info(f"Index created with {document_count} documents")
         self.logger.info(f"Saving index to {index_path}")
         faiss.write_index(index, index_path)
