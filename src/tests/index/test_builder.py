@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, mock_open
 import numpy as np
 
 # Assuming your IndexBuilder class is in a file named 'index_builder.py'
-from index_builder import IndexBuilder
+from index.builder import IndexBuilder
 
 class TestIndexBuilder:
     @pytest.fixture
