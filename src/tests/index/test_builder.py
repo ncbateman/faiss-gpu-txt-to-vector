@@ -1,5 +1,5 @@
 import pytest
-from index.builder import IndexBuilder  # Adjust the import path as needed
+from ./index.builder import IndexBuilder  # Adjust the import path as needed
 import numpy as np
 import faiss
 import torch
