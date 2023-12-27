@@ -1,89 +1,80 @@
 import pytest
+from unittest.mock import Mock, patch
 import numpy as np
-import faiss
-import torch
-from transformers import AutoModel, AutoTokenizer
-from index.builder import IndexBuilder
 
-# Test to check if device is correctly set to GPU when available
-def test_setup_device_with_gpu(mocker):
-    mocker.patch('torch.cuda.is_available', return_value=True)
-    mocker.patch('torch.cuda.device_count', return_value=1)
-    mocker.patch('torch.cuda.get_device_name', return_value='Test GPU')
+# Assuming your IndexBuilder class is in a file named 'index_builder.py'
+from index_builder import IndexBuilder
 
-    builder = IndexBuilder()
-    assert builder.device == 'cuda'
+class TestIndexBuilder:
+    @pytest.fixture
+    def mock_tokenizer(self):
+        return Mock()
 
-# Test to check if device falls back to CPU when GPU is not available
-def test_setup_device_with_cpu(mocker):
-    mocker.patch('torch.cuda.is_available', return_value=False)
+    @pytest.fixture
+    def mock_model(self):
+        mock_model = Mock()
+        mock_model.return_value = Mock()
+        return mock_model
 
-    builder = IndexBuilder()
-    assert builder.device == 'cpu'
+    @pytest.fixture
+    def index_builder(self, mock_tokenizer, mock_model):
+        return IndexBuilder(mock_tokenizer, mock_model, 'cpu', '/path/to/documents')
 
-# Test to check if model and tokenizer are loaded correctly
-def test_load_model(mocker):
-    mocker.patch.object(IndexBuilder, '_load_model')
+    @pytest.fixture
+    def mock_embedding(self):
+        return np.random.rand(1, 768)
 
-    builder = IndexBuilder()
-    builder._load_model.assert_called_once()
+    def test_initialization(self, index_builder):
+        assert index_builder.tokenizer is not None
+        assert index_builder.model is not None
+        assert index_builder.device == 'cpu'
+        assert index_builder.documents_dir == '/path/to/documents'
 
-# Test to check if the index is created correctly
-def test_create_index(mocker):
-    mocker.patch('builtins.open', mocker.mock_open(read_data='test text'))
-    mocker.patch('os.listdir', return_value=['test.txt'])
-    mocker.patch('faiss.write_index')
-    mocker.patch.object(IndexBuilder, '_embed_text', return_value=np.array([1, 2, 3]))
-    mocker.patch.object(IndexBuilder, '_create_gpu_index', return_value=faiss.IndexFlatL2(768))
+    @patch('index_builder.logging')
+    def test_embed_text_success(self, mock_logging, index_builder, mock_embedding):
+        index_builder.model.return_value.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = mock_embedding
+        result = index_builder._embed_text("test text")
+        assert result.shape == (1, 768)
 
-    builder = IndexBuilder()
-    builder.create_index()
+    @patch('index_builder.logging')
+    def test_embed_text_exception(self, mock_logging, index_builder):
+        index_builder.model.side_effect = Exception("Test Exception")
+        with pytest.raises(Exception):
+            index_builder._embed_text("test text")
 
-    assert builder._embed_text.called
-    assert builder._create_gpu_index.called
+    @patch('index_builder.faiss')
+    @patch('index_builder.logging')
+    def test_create_gpu_index_success(self, mock_logging, mock_faiss, index_builder):
+        index_builder.device = 'cuda'
+        result = index_builder._create_gpu_index(768)
+        assert result is not None
 
-# Test to handle model loading failure
-def test_load_model_failure(mocker):
-    mocker.patch('transformers.AutoTokenizer.from_pretrained', side_effect=Exception('Load error'))
+    @patch('index_builder.faiss')
+    @patch('index_builder.logging')
+    def test_create_gpu_index_exception(self, mock_logging, mock_faiss, index_builder):
+        index_builder.device = 'cuda'
+        mock_faiss.IndexFlatL2.side_effect = Exception("Test Exception")
+        with pytest.raises(Exception):
+            index_builder._create_gpu_index(768)
 
-    with pytest.raises(Exception) as excinfo:
-        builder = IndexBuilder()
-    assert 'Load error' in str(excinfo.value)
+    @patch('index_builder.faiss')
+    @patch('index_builder.os')
+    @patch('index_builder.open', new_callable=pytest.mock.mock_open, read_data="mock file content")
+    @patch('index_builder.logging')
+    def test_create_index_success(self, mock_logging, mock_open, mock_os, mock_faiss, index_builder, mock_embedding):
+        index_builder.device = 'cpu'
+        mock_os.listdir.return_value = ['doc1.txt', 'doc2.txt']
+        index_builder._embed_text = Mock(return_value=mock_embedding)
+        index_builder.create_index()
+        assert mock_faiss.write_index.called
 
-# Test the _embed_text method
-def test_embed_text(mocker):
-    mocker.patch.object(IndexBuilder, '_embed_text')
-    test_text = "Test text"
+    @patch('index_builder.faiss')
+    @patch('index_builder.os')
+    @patch('index_builder.logging')
+    def test_create_index_exception(self, mock_logging, mock_os, mock_faiss, index_builder):
+        index_builder.device = 'cpu'
+        mock_os.listdir.side_effect = Exception("Test Exception")
+        with pytest.raises(Exception):
+            index_builder.create_index()
 
-    builder = IndexBuilder()
-    builder._embed_text(test_text)
-
-    builder._embed_text.assert_called_once_with(test_text)
-
-# Test creating GPU index
-def test_create_gpu_index(mocker):
-    mocker.patch('faiss.IndexFlatL2')
-
-    builder = IndexBuilder()
-    dimension = 768
-    builder._create_gpu_index(dimension)
-
-    assert faiss.IndexFlatL2.called_with(dimension)
-
-# Test GPU index integration in the creation process
-def test_create_gpu_index_integration(mocker):
-    mocker.patch('faiss.index_cpu_to_all_gpus')
-
-    builder = IndexBuilder()
-    dimension = 768
-    builder._create_gpu_index(dimension)
-
-    assert faiss.index_cpu_to_all_gpus.called_once()
-
-# Test handling file errors during index creation
-def test_create_index_with_file_error(mocker):
-    mocker.patch('builtins.open', mocker.mock_open(read_data='test text'), side_effect=Exception('File error'))
-
-    builder = IndexBuilder()
-    with pytest.raises(Exception):
-        builder.create_index()
+# Additional tests can be added similarly for other aspects of the IndexBuilder class.
