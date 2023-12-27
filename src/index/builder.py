@@ -1,5 +1,3 @@
-# index_builder.py
-
 import logging
 import os
 import time
@@ -7,6 +5,7 @@ import time
 import faiss
 import torch
 from transformers import AutoModel, AutoTokenizer
+from faiss import StandardGpuResources, index_cpu_to_all_gpus
 
 # Configure logging
 logging.basicConfig(
@@ -57,6 +56,13 @@ class IndexBuilder:
         embeddings = outputs.last_hidden_state.mean(dim=1)
         return embeddings.cpu().detach().numpy()
 
+    def _create_gpu_index(self, d):
+        """Creates a FAISS index and replicates it over all GPUs."""
+        res = [StandardGpuResources() for _ in range(torch.cuda.device_count())]
+        index_flat = faiss.IndexFlatL2(d)
+        gpu_index = index_cpu_to_all_gpus(index_flat, res=res)
+        return gpu_index
+
     def create_index(self):
         """Creates an index and saves it to /app/output/index/<timestamp>.index"""
         timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -64,7 +70,11 @@ class IndexBuilder:
 
         self.logger.info("Creating index")
         d = 768  # Dimension of embeddings (for BERT-base)
-        index = faiss.IndexFlatL2(d)
+
+        if self.device == 'cuda':
+            index = self._create_gpu_index(d)
+        else:
+            index = faiss.IndexFlatL2(d)
 
         document_count = 0
         for filename in sorted(os.listdir(self.documents_dir)):
@@ -80,3 +90,7 @@ class IndexBuilder:
         self.logger.info(f"Saving index to {index_path}")
         faiss.write_index(index, index_path)
 
+
+if __name__ == "__main__":
+    index_builder = IndexBuilder()
+    index_builder.create_index()
