@@ -10,13 +10,16 @@ logging.basicConfig(
 )
 
 def main():
-    """Main function to initialize and run the index building process."""
+
+    model_path = '/app/models/tokenizer'
+    documents_dir = '/app/input/txt'
+
     try:
-        # Initialize IndexBuilder with the loaded configuration
-        index_builder = IndexBuilder()
-        # Create the index using the specified index path from the configuration
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model = AutoModel.from_pretrained(model_path).to(device)
+        index_builder = IndexBuilder(tokenizer, model, device, documents_dir)
         index_builder.create_index()
-        
         logging.info("Index building process completed successfully.")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
@@ -24,3 +27,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
