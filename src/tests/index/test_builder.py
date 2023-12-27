@@ -16,9 +16,11 @@ class TestIndexBuilder:
 
     @pytest.fixture
     def mock_model(self):
+        # Setup mock model to return a mock object with a specific structure
         model = Mock()
-        model_output = MockModelOutput(Mock())
-        model_output.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = np.random.rand(1, 768)
+        last_hidden_state_mock = Mock()
+        last_hidden_state_mock.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = np.random.rand(1, 768)
+        model_output = MockModelOutput(last_hidden_state=last_hidden_state_mock)
         model.return_value = model_output
         return model
 
@@ -38,6 +40,7 @@ class TestIndexBuilder:
 
     @patch('index.builder.logging')
     def test_embed_text_success(self, mock_logging, index_builder, mock_embedding):
+        # Directly mock the embedding output
         index_builder.model.return_value.last_hidden_state.mean.return_value.cpu.return_value.detach.return_value.numpy.return_value = mock_embedding
         result = index_builder._embed_text("test text")
         assert result.shape == (1, 768)
