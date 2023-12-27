@@ -5,7 +5,7 @@ FROM ubuntu:20.04
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.9 and pip
+# Install Python 3.8 and pip
 RUN apt-get update
 RUN apt-get install -y wget
 RUN apt-get install -y python3-pip
