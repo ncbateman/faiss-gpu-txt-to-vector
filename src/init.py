@@ -15,7 +15,7 @@ def main():
         # Initialize IndexBuilder with the loaded configuration
         index_builder = IndexBuilder()
         # Create the index using the specified index path from the configuration
-        index_builder.create_index('/app/output/index')
+        index_builder.create_index()
         
         logging.info("Index building process completed successfully.")
     except Exception as e:

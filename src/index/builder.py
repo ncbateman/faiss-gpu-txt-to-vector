@@ -56,8 +56,11 @@ class IndexBuilder:
         embeddings = outputs.last_hidden_state.mean(dim=1)
         return embeddings.cpu().detach().numpy()
 
-    def create_index(self, index_path):
-        """Creates an index and saves it to the specified path."""
+    def create_index(self):
+        """Creates an index and saves it to /app/output/index/<timestamp>.index"""
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        index_path = f"/app/output/index/{timestamp}.index"
+
         self.logger.info("Creating index")
         d = 768  # Dimension of embeddings (for BERT-base)
         index = faiss.IndexFlatL2(d)
@@ -75,3 +78,4 @@ class IndexBuilder:
         self.logger.info(f"Index created with {document_count} documents")
         self.logger.info(f"Saving index to {index_path}")
         faiss.write_index(index, index_path)
+
