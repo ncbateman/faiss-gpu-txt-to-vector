@@ -1,3 +1,5 @@
+# __init__.py
+
 import pytest
 import numpy as np
 import faiss
