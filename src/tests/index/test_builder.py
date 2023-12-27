@@ -1,8 +1,9 @@
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, mock_open
 import numpy as np
 
-from index.builder import IndexBuilder
+# Assuming your IndexBuilder class is in a file named 'index_builder.py'
+from index_builder import IndexBuilder
 
 class TestIndexBuilder:
     @pytest.fixture
@@ -57,22 +58,20 @@ class TestIndexBuilder:
             index_builder._create_gpu_index(768)
 
     @patch('index_builder.faiss')
-    @patch('index_builder.os')
-    @patch('index_builder.open', new_callable=pytest.mock.mock_open, read_data="mock file content")
+    @patch('index_builder.os.listdir', return_value=['doc1.txt', 'doc2.txt'])
+    @patch('index_builder.open', new_callable=mock_open, read_data="mock file content")
     @patch('index_builder.logging')
-    def test_create_index_success(self, mock_logging, mock_open, mock_os, mock_faiss, index_builder, mock_embedding):
+    def test_create_index_success(self, mock_logging, mock_file_open, mock_listdir, mock_faiss, index_builder, mock_embedding):
         index_builder.device = 'cpu'
-        mock_os.listdir.return_value = ['doc1.txt', 'doc2.txt']
         index_builder._embed_text = Mock(return_value=mock_embedding)
         index_builder.create_index()
         assert mock_faiss.write_index.called
 
     @patch('index_builder.faiss')
-    @patch('index_builder.os')
+    @patch('index_builder.os.listdir', side_effect=Exception("Test Exception"))
     @patch('index_builder.logging')
-    def test_create_index_exception(self, mock_logging, mock_os, mock_faiss, index_builder):
+    def test_create_index_exception(self, mock_logging, mock_listdir, mock_faiss, index_builder):
         index_builder.device = 'cpu'
-        mock_os.listdir.side_effect = Exception("Test Exception")
         with pytest.raises(Exception):
             index_builder.create_index()
 
