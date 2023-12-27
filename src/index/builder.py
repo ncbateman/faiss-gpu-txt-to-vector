@@ -2,6 +2,7 @@
 
 import logging
 import os
+import time
 
 import faiss
 import torch
