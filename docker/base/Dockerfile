@@ -16,62 +16,30 @@ RUN apt-get install -y libomp-dev
 RUN pip3 install --upgrade pip
 
 # Install the required Python packages
-RUN pip3 install --default-timeout=1000 jinja2
-RUN pip3 install --default-timeout=1000 networkx
-RUN pip3 install --default-timeout=1000 numpy
-RUN pip3 install --default-timeout=1000 nvidia-cudnn-cu12
-RUN pip3 install --default-timeout=1000 torch
-RUN pip3 install --default-timeout=1000 transformers
-RUN pip3 install --default-timeout=1000 tokenizers
+RUN pip3 install jinja2
+RUN pip3 install networkx
+RUN pip3 install numpy
 
+# Install nvidia libraries seperately for unstable connections
+RUN pip3 install nvidia-cublas-cu12
+RUN pip3 install nvidia-cuda-cupti-cu12
+RUN pip3 install nvidia-cuda-nvrtc-cu12
+RUN pip3 install nvidia-cuda-runtime-cu12
+RUN pip3 install nvidia-cudnn-cu12
+RUN pip3 install nvidia-cufft-cu12
+RUN pip3 install nvidia-curand-cu12
+RUN pip3 install nvidia-cusolver-cu12
+RUN pip3 install nvidia-cusparse-cu12
+RUN pip3 install nvidia-nccl-cu12
+RUN pip3 install nvidia-nvtx-cu12
+
+
+# Install ml libraries
+RUN pip3 install torch
+RUN pip3 install transformers
+RUN pip3 install tokenizers
+
+
+# Install faiss
 COPY ./deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 RUN pip3 install /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-
-
-
-
-
-
-
-
-
-
-
-##OLD 
-# RUN pip3 install --default-timeout=1000 filelock
-# RUN pip3 install --default-timeout=1000 fsspec
-# RUN pip3 install --default-timeout=1000 huggingface-hub
-# RUN pip3 install --default-timeout=1000 packaging
-# RUN pip3 install --default-timeout=1000 pyyaml
-# RUN pip3 install --default-timeout=1000 regex
-# RUN pip3 install --default-timeout=1000 requests
-# RUN pip3 install --default-timeout=1000 safetensors
-# RUN pip3 install --default-timeout=1000 sympy
-# RUN pip3 install --default-timeout=1000 triton
-# RUN pip3 install --default-timeout=1000 tqdm
-# RUN pip3 install --default-timeout=1000 typing-extensions
-# RUN pip3 install --default-timeout=1000 accelerate
-# RUN pip3 install --default-timeout=1000 optimum
-# RUN pip3 install --default-timeout=1000 auto-gptq
-# RUN pip3 install --default-timeout=1000 flask
-
-
-
-# Install Miniconda
-# RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-#     bash ~/miniconda.sh -b -p /root/miniconda3 && \
-#     rm ~/miniconda.sh
-# ENV PATH="/root/miniconda3/bin:${PATH}"
-# RUN conda update -n base -c defaults conda
-
-# # Create faiss_env environment
-# RUN conda create -n faiss_env -y
-# ENV PATH /python/bin:$PATH
-
-# # Activate the environment
-# RUN echo "source activate faiss_env" >> ~/.bashrc
-# SHELL ["/bin/bash", "--login", "-c"]
-
-
-# # Install FAISS-GPU in Conda environment
-# RUN conda install faiss=1.7.4 -c pytorch -c conda-forge
