@@ -91,6 +91,11 @@ class IndexBuilder:
 
         document_count = len(embeddings)
         self.logger.info(f"Index created with {document_count} documents")
+
+        # Convert GPU index to CPU index before saving
+        if self.device == 'cuda':
+            index = faiss.index_gpu_to_cpu(index)
+
         self.logger.info(f"Saving index to {index_path}")
         faiss.write_index(index, index_path)
 
