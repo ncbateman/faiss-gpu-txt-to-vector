@@ -38,6 +38,7 @@ class TestIndexBuilder:
         assert index_builder.device == 'cpu'
         assert index_builder.documents_dir == '/path/to/documents'
 
+    # TODO: fix mock shape.
     # @patch('index.builder.logging')
     # def test_embed_text_success(self, mock_logging, index_builder, mock_embedding):
     #     # Directly mock the embedding output
