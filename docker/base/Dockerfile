@@ -19,11 +19,10 @@ RUN pip3 install --upgrade pip
 RUN pip3 install --default-timeout=1000 jinja2
 RUN pip3 install --default-timeout=1000 networkx
 RUN pip3 install --default-timeout=1000 numpy
+RUN pip3 install --default-timeout=1000 nvidia-cudnn-cu12
 RUN pip3 install --default-timeout=1000 torch
 RUN pip3 install --default-timeout=1000 transformers
 RUN pip3 install --default-timeout=1000 tokenizers
-
-RUN python3 --version
 
 COPY ./deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 RUN pip3 install /deps/faiss_gpu-1.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
