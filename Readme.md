@@ -1,4 +1,4 @@
-# faiss-gpu-txt-to-vector Application
+# faiss-gpu-txt-to-vector
 
 ![Ubuntu 20.04](https://img.shields.io/badge/Ubuntu-20.04-E95420.svg)
 ![Python 3.9](https://img.shields.io/badge/Python-3.9-3776AB.svg)
@@ -28,8 +28,14 @@ To set up the "faiss-gpu-txt-to-vector" application, follow these steps:
 
 2. **Running the Application:**
    The `run.sh` script will also initiate the `faiss-gpu-txt-to-vector` Docker container, ensuring it has appropriate GPU support and the necessary directories for models, input data, and output are properly mounted.
-   
-   The application processes input text data and generates an efficient FAISS index for further use.
+
+   ### Command-Line Flags in run.sh
+   The script accepts the following optional command-line flags:
+   - `-t` or `--tokenizer-model`: Path to the tokenizer model. Default: `./models/`
+   - `-i` or `--index-output`: Directory for index output. Default: `./indexes/`
+   - `-d` or `--txt-input-dir`: Directory for input text files. Default: `./input/`
+
+   Use these flags as needed when executing the script to override the default settings.
 
 ## Usage
 The "faiss-gpu-txt-to-vector" application is designed to handle text files in the designated input directory and create a vectorized index. Ensure your text data is correctly formatted and placed in the input directory prior to executing the application.
